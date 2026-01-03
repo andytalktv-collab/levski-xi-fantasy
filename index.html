@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Levski XI Fantasy — Leaderboard</title>
+  <style>
+    :root{
+      --blue:#0b4fb3;      /* Levski-ish blue */
+      --blue2:#083b86;
+      --white:#ffffff;
+      --bg:#07111f;
+      --card:#0d1a2e;
+      --muted:#a9b6cf;
+      --line:rgba(255,255,255,.10);
+      --gold:#f5c542;
+      --silver:#c9d2dc;
+      --bronze:#d9a06a;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--white);
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(11,79,179,.35), transparent 60%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(255,255,255,.08), transparent 55%),
+                  linear-gradient(180deg, #061022, #050a14);
+      min-height:100vh;
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    .header{
+      background: linear-gradient(135deg, rgba(11,79,179,.55), rgba(8,59,134,.25));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:16px;
+      box-shadow: var(--shadow);
+      position:sticky;top:0;backdrop-filter: blur(10px);
+      z-index:2;
+    }
+    .brand{display:flex;gap:12px;align-items:center}
+    .badge{
+      width:42px;height:42px;border-radius:12px;
+      background: linear-gradient(135deg, var(--blue), #2a7fff);
+      display:grid;place-items:center;
+      font-weight:800;
+      box-shadow: 0 10px 20px rgba(11,79,179,.35);
+    }
+    h1{font-size:18px;margin:0}
+    .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+    .controls{
+      margin-top:12px;
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+    }
+    .seg{
+      display:flex;gap:6px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:6px;border-radius:999px;
+    }
+    .seg button{
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:700;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .seg button.active{
+      background: linear-gradient(135deg, var(--blue), #2a7fff);
+      color:var(--white);
+    }
+    .search{
+      flex:1;
+      min-width:220px;
+      display:flex;justify-content:flex-end;
+    }
+    .search input{
+      width:100%;
+      max-width:320px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      color:var(--white);
+      padding:10px 12px;
+      border-radius: 12px;
+      outline:none;
+      font-size:13px;
+    }
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    .card{
+      background: rgba(13,26,46,.9);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .section-title{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;
+    }
+    .section-title .t{font-weight:800}
+    .section-title .hint{color:var(--muted);font-size:12px}
+    .podium{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+      padding:14px;
+    }
+    .pod{
+      background: rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      position:relative;
+      min-height:110px;
+    }
+    .pod .rank{
+      position:absolute;top:10px;right:10px;
+      font-weight:900;font-size:18px;
+      opacity:.9;
+    }
+    .pod .name{font-weight:900;font-size:14px;margin-top:14px;word-break:break-word}
+    .pod .meta{color:var(--muted);font-size:12px;margin-top:6px;display:flex;gap:10px;flex-wrap:wrap}
+    .chip{
+      display:inline-flex;align-items:center;gap:6px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:6px 8px;border-radius:999px;
+    }
+    .gold{outline:2px solid rgba(245,197,66,.35)}
+    .silver{outline:2px solid rgba(201,210,220,.30)}
+    .bronze{outline:2px solid rgba(217,160,106,.30)}
+    .gold .rank{color:var(--gold)}
+    .silver .rank{color:var(--silver)}
+    .bronze .rank{color:var(--bronze)}
+
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px 12px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+    th{color:var(--muted);font-weight:800;background:rgba(255,255,255,.03);position:sticky;top:86px}
+    tr:hover td{background:rgba(255,255,255,.03)}
+    .r{width:56px}
+    .pts{font-weight:900}
+    .muted{color:var(--muted)}
+    .small{font-size:12px;color:var(--muted)}
+    .footer{padding:12px 14px;color:var(--muted);font-size:12px}
+    .status{margin-top:10px;color:var(--muted);font-size:12px}
+    .error{color:#ffb4b4}
+    @media (max-width:640px){
+      th:nth-child(4), td:nth-child(4),
+      th:nth-child(5), td:nth-child(5){
+        display:none; /* на телефон скриваме 2 колони, за да е чисто */
+      }
+      .podium{grid-template-columns:1fr; }
+      th{top:132px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div class="brand">
+        <div class="badge">XI</div>
+        <div>
+          <h1>Levski XI Fantasy — Класиране</h1>
+          <div class="sub">Модерна таблица (чете Google Sheets CSV). Нищо не променя по логиката.</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="seg" aria-label="filters">
+          <button class="active" data-mode="all">All-time</button>
+          <button data-mode="month" title="(готово за бъдеще)">This Month</button>
+          <button data-mode="week" title="(готово за бъдеще)">This Week</button>
+        </div>
+
+        <div class="search">
+          <input id="q" placeholder="Търси по име…" autocomplete="off" />
+        </div>
+      </div>
+
+      <div id="status" class="status">Зареждане…</div>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <div class="section-title">
+          <div class="t">Подиум (Top 3)</div>
+          <div class="hint">🥇🥈🥉</div>
+        </div>
+        <div id="podium" class="podium"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <div class="t">Всички участници</div>
+          <div class="hint">сортирано по точки</div>
+        </div>
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th class="r">Rank</th>
+                <th>Име</th>
+                <th>Точки</th>
+                <th>Correct</th>
+                <th>Accuracy</th>
+                <th>Submissions</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="footer">
+          Ако искаш Week/Month реално да работят, после просто ще добавим отделни CSV линкове (без да пипаме скрипта).
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ✅ ТВОЯТ CSV ЛИНК (публикуван от Google Sheets)
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSPgEXaNJFzV9--a9kkEMjB7jNRcR_PGtdhvk89uKGHwKGNpn4fMaau8JDCTlsV5fHFJV50wO63-7Jq/pubhtml?gid=1246659644&single=true&output=csv";
+
+    const statusEl = document.getElementById("status");
+    const podiumEl = document.getElementById("podium");
+    const rowsEl = document.getElementById("rows");
+    const qEl = document.getElementById("q");
+    const segButtons = [...document.querySelectorAll(".seg button")];
+
+    let data = [];
+    let mode = "all";
+    let query = "";
+
+    function setStatus(msg, isError=false){
+      statusEl.textContent = msg;
+      statusEl.className = "status" + (isError ? " error" : "");
+    }
+
+    function parseCSV(text){
+      // прост CSV parser (поддържа кавички)
+      const rows = [];
+      let row = [], cur = "", inQ = false;
+      for (let i=0;i<text.length;i++){
+        const c = text[i];
+        const n = text[i+1];
+        if (c === '"' ){ 
+          if (inQ && n === '"'){ cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (c === "," && !inQ){
+          row.push(cur); cur = "";
+        } else if ((c === "\n" || c === "\r") && !inQ){
+          if (c === "\r" && n === "\n") i++;
+          row.push(cur);
+          if (row.some(x => x !== "")) rows.push(row);
+          row = []; cur = "";
+        } else {
+          cur += c;
+        }
+      }
+      if (cur.length || row.length){ row.push(cur); rows.push(row); }
+      return rows;
+    }
+
+    function normalizeNumber(v){
+      // приема "72,73%" или "72.73%" или "0.7273"
+      if (v == null) return 0;
+      const s = String(v).trim();
+      if (!s) return 0;
+      if (s.includes("%")){
+        const num = parseFloat(s.replace("%","").replace(",","."));
+        return isNaN(num) ? 0 : num/100;
+      }
+      const num = parseFloat(s.replace(",","."));
+      return isNaN(num) ? 0 : num;
+    }
+
+    function render(){
+      const filtered = data
+        .filter(r => r.name.toLowerCase().includes(query))
+        .sort((a,b) => b.points - a.points || b.correct - a.correct);
+
+      // ranks
+      filtered.forEach((r, i) => r.rank = i+1);
+
+      // podium
+      podiumEl.innerHTML = "";
+      const top3 = filtered.slice(0,3);
+      const classes = ["gold","silver","bronze"];
+      const medals = ["🥇","🥈","🥉"];
+      top3.forEach((r, i) => {
+        const div = document.createElement("div");
+        div.className = `pod ${classes[i]}`;
+        div.innerHTML = `
+          <div class="rank">${medals[i]} #${r.rank}</div>
+          <div class="name">${escapeHtml(r.name)}</div>
+          <div class="meta">
+            <span class="chip">⭐ <b>${r.points}</b> т.</span>
+            <span class="chip">✅ <b>${r.correct}</b> correct</span>
+            <span class="chip">🎯 <b>${Math.round(r.accuracy*100)}%</b></span>
+          </div>
+        `;
+        podiumEl.appendChild(div);
+      });
+
+      // table
+      rowsEl.innerHTML = "";
+      filtered.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="r"><b>#${r.rank}</b></td>
+          <td>
+            <div style="font-weight:900">${escapeHtml(r.name)}</div>
+            <div class="small">${modeLabel(mode)}</div>
+          </td>
+          <td class="pts">${r.points}</td>
+          <td>${r.correct}</td>
+          <td>${Math.round(r.accuracy*100)}%</td>
+          <td class="muted">${r.submissions}</td>
+        `;
+        rowsEl.appendChild(tr);
+      });
+
+      setStatus(`ОК ✅ Заредени: ${filtered.length} участници`);
+    }
+
+    function modeLabel(m){
+      if (m==="week") return "Филтър: This Week (готово за бъдеще)";
+      if (m==="month") return "Филтър: This Month (готово за бъдеще)";
+      return "Филтър: All-time";
+    }
+
+    function escapeHtml(s){
+      return String(s ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    async function load(){
+      setStatus("Зареждане от Google Sheets…");
+      try{
+        const res = await fetch(CSV_URL, {cache:"no-store"});
+        if(!res.ok) throw new Error("HTTP " + res.status);
+        const text = await res.text();
+        const rows = parseCSV(text);
+        if(!rows.length) throw new Error("Празен CSV");
+
+        const header = rows[0].map(h => h.trim());
+        // очакваме: Name, Submissions, TotalCorrect, OverallPercent
+        const idxName = header.findIndex(h => /name/i.test(h));
+        const idxSubs = header.findIndex(h => /submissions/i.test(h));
+        const idxCorr = header.findIndex(h => /totalcorrect|correct/i.test(h));
+        const idxAcc  = header.findIndex(h => /overallpercent|percent|accuracy/i.test(h));
+
+        if (idxName < 0 || idxSubs < 0 || idxCorr < 0 || idxAcc < 0){
+          throw new Error("Липсват колони. Трябват: Name, Submissions, TotalCorrect, OverallPercent");
+        }
+
+        data = rows.slice(1)
+          .filter(r => r[idxName] && String(r[idxName]).trim() !== "")
+          .map(r => ({
+            name: String(r[idxName]).trim(),
+            submissions: parseInt(String(r[idxSubs]||"0").trim(), 10) || 0,
+            correct: parseInt(String(r[idxCorr]||"0").trim(), 10) || 0,
+            accuracy: normalizeNumber(r[idxAcc]),
+            points: parseInt(String(r[idxCorr]||"0").trim(), 10) || 0 // за v1: точки = totalCorrect
+          }));
+
+        render();
+      }catch(e){
+        setStatus("Грешка: " + e.message + " ❌ (провери дали Sheet е публикуван + output=csv)", true);
+      }
+    }
+
+    // events
+    qEl.addEventListener("input", (e)=>{
+      query = (e.target.value || "").trim().toLowerCase();
+      render();
+    });
+
+    segButtons.forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        segButtons.forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        mode = btn.dataset.mode;
+        // v1: режимът само показва label. По-късно ще вържем week/month към други CSV линкове.
+        render();
+      });
+    });
+
+    load();
+  </script>
+</body>
+</html>
